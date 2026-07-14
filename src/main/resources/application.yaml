@@ -1,3 +1,29 @@
 spring:
   application:
     name: todo
+  # STDIO 로 동작하는 로컬 MCP 서버이므로 웹 서버와 배너를 끈다.
+  main:
+    web-application-type: none
+    banner-mode: off
+  ai:
+    mcp:
+      server:
+        name: todo-mcp-server
+        version: 0.0.1
+        # STDIO transport 활성화 (Host <-> Client <-> Server 를 표준 입출력으로 연결)
+        stdio: true
+        instructions: >-
+          메모리에 저장되는 Todo 관리 MCP 서버.
+          add_todo / complete_todo 도구, todos://list 리소스, summarize_todos 프롬프트를 제공한다.
+        capabilities:
+          tool: true
+          resource: true
+          prompt: true
+
+# STDIO transport 는 stdout 을 JSON-RPC 채널로 사용하므로,
+# 로그가 stdout 을 오염시키지 않도록 콘솔 출력을 끄고 파일로만 남긴다.
+logging:
+  threshold:
+    console: "OFF"
+  file:
+    name: ./logs/todo-mcp-server.log
