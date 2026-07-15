@@ -44,6 +44,9 @@ public class GithubTools {
         this.githubToken = System.getenv("GITHUB_TOKEN");
     }
 
+    // record: 데이터를 저장하고 전달하는 용도로만 사용하는 '불변 데이터 객체'를 만들기 위한 종류의 클래스
+    // 각 Tool의 응답을 담는 불변 DTO
+    // @McpTool 메서드가 이 타입을 리턴하면 MCP 서버가 자동으로 JSON으로 직렬화해서 클라이언트에 넘김
     public record CommitInfo(String sha, String repository, String message, String url, List<String> changedFiles) {
     }
 
@@ -59,6 +62,7 @@ public class GithubTools {
         Instant since = today.atStartOfDay(KST).toInstant();
         Instant until = today.plusDays(1).atStartOfDay(KST).minusSeconds(1).toInstant();
 
+        // GitHub Search Commits API 쿼리 문자열 조립
         String query = "author:%s committer-date:%s..%s".formatted(
                 GITHUB_USERNAME,
                 DateTimeFormatter.ISO_INSTANT.format(since),
@@ -67,7 +71,9 @@ public class GithubTools {
         String url = "https://api.github.com/search/commits?per_page=100&q="
                 + URLEncoder.encode(query, StandardCharsets.UTF_8);
 
+        // 검색 API 호출
         JsonNode root = get(url);
+
         List<CommitInfo> result = new ArrayList<>();
         for (JsonNode item : root.path("items")) {
             String sha = item.path("sha").asString();
@@ -84,14 +90,12 @@ public class GithubTools {
     public IssueInfo createIssue(
             @McpArg(name = "repo", description = "이슈를 생성할 레포지토리 (예: TaegyunB/todo)", required = true) String repo,
             @McpArg(name = "title", description = "이슈 제목", required = true) String title,
-            @McpArg(name = "body", description = "이슈 본문", required = false) String body) {
+            @McpArg(name = "body", description = "이슈 본문", required = true) String body) {
         requireToken();
 
         ObjectNode payload = jsonMapper.createObjectNode();
         payload.put("title", title);
-        if (body != null && !body.isBlank()) {
-            payload.put("body", body);
-        }
+        payload.put("body", body);
 
         String url = "https://api.github.com/repos/%s/issues".formatted(repo);
         JsonNode root = post(url, jsonMapper.writeValueAsString(payload));
@@ -109,6 +113,7 @@ public class GithubTools {
         return files;
     }
 
+    //== 공통 HTTP 헬퍼 ==//
     private JsonNode get(String url) {
         try {
             HttpRequest request = HttpRequest.newBuilder(URI.create(url))

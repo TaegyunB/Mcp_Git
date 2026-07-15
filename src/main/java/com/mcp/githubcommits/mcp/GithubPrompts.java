@@ -12,7 +12,7 @@ public class GithubPrompts {
     public String createIssuePrompt(
             @McpArg(name = "repo", description = "이슈를 생성할 레포지토리 (예: TaegyunB/todo)", required = true) String repo,
             @McpArg(name = "title", description = "이슈 제목", required = true) String title,
-            @McpArg(name = "description", description = "이슈 내용", required = true) String description) {
+            @McpArg(name = "body", description = "이슈 본문", required = true) String body) {
         return """
                 %s 레포지토리에 올릴 GitHub 이슈를 생성해줘
 
@@ -25,6 +25,6 @@ public class GithubPrompts {
                 
                 참고 내용:
                 %s
-                """.formatted(repo, title, description);
+                """.formatted(repo, title, body);
     }
 }
