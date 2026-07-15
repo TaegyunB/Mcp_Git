@@ -13,6 +13,26 @@ import java.util.List;
 @Service
 public class GitTools {
 
+    @McpTool(name = "git_status",
+            description = "지정한 로컬 git 저장소의 변경 파일 목록을 간단한 형식으로 보여준다 (git status --short). "
+                    + "어떤 파일이 추가/수정/삭제되었는지 파악하는 용도.")
+    public String gitStatus(
+            @McpArg(name = "repoPath", description = "로컬 git 저장소 경로", required = true) String repoPath) {
+        String output = runGit(repoPath, "status", "--short");
+        return output.equals("OK") ? "변경사항이 없습니다 (working tree clean)." : output;
+    }
+
+    @McpTool(name = "git_diff",
+            description = "지정한 로컬 git 저장소의 변경 내용(diff)을 보여준다. 커밋 메시지를 작성하기 위해 "
+                    + "무엇이 어떻게 바뀌었는지 확인하는 용도. 기본적으로 아직 스테이징되지 않은 변경과 "
+                    + "스테이징된 변경을 모두 포함한다 (git diff HEAD). "
+                    + "새로 추가된(untracked) 파일의 내용은 diff 에 나타나지 않으므로, 필요하면 git_status 로 함께 확인할 것.")
+    public String gitDiff(
+            @McpArg(name = "repoPath", description = "로컬 git 저장소 경로", required = true) String repoPath) {
+        String output = runGit(repoPath, "diff", "HEAD");
+        return output.equals("OK") ? "변경 내용이 없습니다 (nothing to diff)." : output;
+    }
+
     @McpTool(name = "git_add", description = "지정한 로컬 git 저장소의 모든 변경사항을 스테이징한다 (git add -A).")
     public String gitAdd(
             @McpArg(name = "repoPath", description = "로컬 git 저장소 경로", required = true) String repoPath) {

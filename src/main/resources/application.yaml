@@ -18,7 +18,7 @@ spring:
           각 커밋의 변경 파일 목록을 가져온다.
         capabilities:
           tool: true
-          resource: false
+          resource: true
           prompt: true
 
 # STDIO transport 는 stdout 을 JSON-RPC 채널로 사용하므로,
