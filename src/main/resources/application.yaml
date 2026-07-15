@@ -1,17 +1,22 @@
 spring:
   application:
     name: github-commits-mcp
-  # STDIO 로 동작하는 로컬 MCP 서버이므로 웹 서버와 배너를 끈다.
+  # HTTP(Streamable) 로 동작하는 원격 접속용 MCP 서버이므로 웹 서버를 켠다.
   main:
-    web-application-type: none
+    web-application-type: servlet
     banner-mode: off
   ai:
     mcp:
       server:
         name: github-commits-mcp-server
         version: 0.0.1
-        # STDIO transport 활성화 (Host <-> Client <-> Server 를 표준 입출력으로 연결)
-        stdio: true
+        # STDIO 를 끄고 HTTP transport 사용
+        stdio: false
+        # 전송 프로토콜: STREAMABLE (Streamable HTTP). Claude Desktop 커스텀 커넥터가 붙는 방식.
+        protocol: STREAMABLE
+        # Streamable HTTP 엔드포인트 경로 (커넥터 URL 의 뒷부분)
+        streamable-http:
+          mcp-endpoint: /mcp
         instructions: >-
           GitHub 오늘 커밋을 조회하는 MCP 서버.
           get_todays_commits 도구로 오늘(한국시간) 올린 커밋 목록과
@@ -21,10 +26,11 @@ spring:
           resource: true
           prompt: true
 
-# STDIO transport 는 stdout 을 JSON-RPC 채널로 사용하므로,
-# 로그가 stdout 을 오염시키지 않도록 콘솔 출력을 끄고 파일로만 남긴다.
+# HTTP 서버가 listen 할 포트
+server:
+  port: 8080
+
+# HTTP transport 에서는 stdout 을 통신 채널로 쓰지 않으므로 콘솔 로그를 켜서 접속 상황을 본다.
 logging:
-  threshold:
-    console: "OFF"
   file:
     name: ./logs/github-commits-mcp-server.log
