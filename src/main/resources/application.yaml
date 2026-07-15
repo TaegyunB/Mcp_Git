@@ -1,6 +1,6 @@
 spring:
   application:
-    name: todo
+    name: github-commits-mcp
   # STDIO 로 동작하는 로컬 MCP 서버이므로 웹 서버와 배너를 끈다.
   main:
     web-application-type: none
@@ -8,17 +8,18 @@ spring:
   ai:
     mcp:
       server:
-        name: todo-mcp-server
+        name: github-commits-mcp-server
         version: 0.0.1
         # STDIO transport 활성화 (Host <-> Client <-> Server 를 표준 입출력으로 연결)
         stdio: true
         instructions: >-
-          메모리에 저장되는 Todo 관리 MCP 서버.
-          add_todo / complete_todo 도구, todos://list 리소스, summarize_todos 프롬프트를 제공한다.
+          GitHub 오늘 커밋을 조회하는 MCP 서버.
+          get_todays_commits 도구로 오늘(한국시간) 올린 커밋 목록과
+          각 커밋의 변경 파일 목록을 가져온다.
         capabilities:
           tool: true
-          resource: true
-          prompt: true
+          resource: false
+          prompt: false
 
 # STDIO transport 는 stdout 을 JSON-RPC 채널로 사용하므로,
 # 로그가 stdout 을 오염시키지 않도록 콘솔 출력을 끄고 파일로만 남긴다.
@@ -26,4 +27,4 @@ logging:
   threshold:
     console: "OFF"
   file:
-    name: ./logs/todo-mcp-server.log
+    name: ./logs/github-commits-mcp-server.log

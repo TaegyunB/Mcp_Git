@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.mcp</groupId>
-	<artifactId>todo</artifactId>
+	<artifactId>github-commits-mcp</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name/>
 	<description/>
