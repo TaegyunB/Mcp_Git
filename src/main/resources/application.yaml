@@ -19,7 +19,7 @@ spring:
         capabilities:
           tool: true
           resource: false
-          prompt: false
+          prompt: true
 
 # STDIO transport 는 stdout 을 JSON-RPC 채널로 사용하므로,
 # 로그가 stdout 을 오염시키지 않도록 콘솔 출력을 끄고 파일로만 남긴다.

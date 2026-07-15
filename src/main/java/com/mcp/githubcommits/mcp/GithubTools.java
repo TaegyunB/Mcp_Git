@@ -1,9 +1,11 @@
 package com.mcp.githubcommits.mcp;
 
+import org.springframework.ai.mcp.annotation.McpArg;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -45,6 +47,9 @@ public class GithubTools {
     public record CommitInfo(String sha, String repository, String message, String url, List<String> changedFiles) {
     }
 
+    public record IssueInfo(String repository, int number, String url) {
+    }
+
     @McpTool(name = "get_todays_commits",
             description = "GitHub 계정(TaegyunB)이 오늘(한국시간 기준) 올린 모든 레포지토리의 커밋 목록과 각 커밋의 변경 파일 목록을 가져온다.")
     public List<CommitInfo> getTodaysCommits() {
@@ -74,6 +79,26 @@ public class GithubTools {
         return result;
     }
 
+    @McpTool(name = "create_issue",
+            description = "지정한 GitHub 레포지토리(owner/repo 형식)에 제목과 본문으로 이슈를 생성한다.")
+    public IssueInfo createIssue(
+            @McpArg(name = "repo", description = "이슈를 생성할 레포지토리 (예: TaegyunB/todo)", required = true) String repo,
+            @McpArg(name = "title", description = "이슈 제목", required = true) String title,
+            @McpArg(name = "body", description = "이슈 본문", required = false) String body) {
+        requireToken();
+
+        ObjectNode payload = jsonMapper.createObjectNode();
+        payload.put("title", title);
+        if (body != null && !body.isBlank()) {
+            payload.put("body", body);
+        }
+
+        String url = "https://api.github.com/repos/%s/issues".formatted(repo);
+        JsonNode root = post(url, jsonMapper.writeValueAsString(payload));
+
+        return new IssueInfo(repo, root.path("number").asInt(), root.path("html_url").asString());
+    }
+
     private List<String> fetchChangedFiles(String repoFullName, String sha) {
         String url = "https://api.github.com/repos/%s/commits/%s".formatted(repoFullName, sha);
         JsonNode root = get(url);
@@ -94,6 +119,29 @@ public class GithubTools {
                     .build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
+                throw new IllegalStateException(
+                        "GitHub API 호출 실패 (%d): %s".formatted(response.statusCode(), response.body()));
+            }
+            return jsonMapper.readTree(response.body());
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("GitHub API 호출 중 오류: " + e.getMessage(), e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("GitHub API 호출이 중단되었습니다.", e);
+        }
+    }
+
+    private JsonNode post(String url, String jsonBody) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                    .header("Accept", "application/vnd.github+json")
+                    .header("Authorization", "Bearer " + githubToken)
+                    .header("X-GitHub-Api-Version", "2022-11-28")
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 201) {
                 throw new IllegalStateException(
                         "GitHub API 호출 실패 (%d): %s".formatted(response.statusCode(), response.body()));
             }
