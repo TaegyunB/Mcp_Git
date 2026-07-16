@@ -23,8 +23,8 @@ public class GitTools {
     }
 
     @McpTool(name = "git_diff",
-            description = "지정한 로컬 git 저장소의 변경 내용(diff)을 보여준다. 커밋 메시지를 작성하기 위해 "
-                    + "무엇이 어떻게 바뀌었는지 확인하는 용도. 기본적으로 아직 스테이징되지 않은 변경과 "
+            description = "지정한 로컬 git 저장소의 변경 내용(diff)을 보여준다. 커밋 메시지를 작성하기 위해 \"\n" +
+                    "                    + \"무엇이 어떻게 바뀌었는지 확인하는 용도. 기본적으로 아직 스테이징되지 않은 변경과 "
                     + "스테이징된 변경을 모두 포함한다 (git diff HEAD). "
                     + "새로 추가된(untracked) 파일의 내용은 diff 에 나타나지 않으므로, 필요하면 git_status 로 함께 확인할 것.")
     public String gitDiff(

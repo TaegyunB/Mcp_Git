@@ -58,6 +58,8 @@ public class GithubTools {
     public List<CommitInfo> getTodaysCommits() {
         requireToken();
 
+        // 타임존을 한국시간 기준으로 설정하고 오늘 자정부터 내일 자정 직전까지
+        // 문자열로 포멧해서 GitHub Search API를 통해서 보내준다.
         LocalDate today = LocalDate.now(KST);
         Instant since = today.atStartOfDay(KST).toInstant();
         Instant until = today.plusDays(1).atStartOfDay(KST).minusSeconds(1).toInstant();
